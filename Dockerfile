@@ -5,6 +5,6 @@ WORKDIR /mybackend
 RUN mvn clean install
 
 FROM openjdk:11.0-slim
-EXPOSE 8080
+EXPOSE 5000
 COPY --from=build /mybackend/target/integrated-backend-0.0.1-SNAPSHOT.jar integrated-backend-0.0.1-SNAPSHOT.jar
 ENTRYPOINT ["java","-jar","integrated-backend-0.0.1-SNAPSHOT.jar"]
