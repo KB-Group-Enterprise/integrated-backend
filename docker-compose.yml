@@ -5,3 +5,7 @@ services:
           image: backend:production
           ports:
             - "5000:5000"
+networks:
+    default:
+        external:
+            name: integrated-network
