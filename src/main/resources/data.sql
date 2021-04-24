@@ -18,8 +18,8 @@ insert into Images(id,name,cars_id) values (1,'bmw-1.jpg',1);
 insert into Images(id,name,cars_id) values (2,'bmw-2.jpg',1);
 insert into Images(id,name,cars_id) values (3,'benz-1.jpg',2);
 
-INSERT INTO Cars (id,name,price,description,releasedate) VALUES (1,'BMW 2 Series Coupe',2990000.00,'The BMW 2 Series Coupé thrills from every angle. Whether it’s the powerful rear-drive performance or the chic sporty presence, it’s ready to set pulses racing. Add to this the impressive interior comforts, and you have the complete driving experience.','2021-02-10');
-INSERT INTO Cars (id,name,price,description,releasedate) VALUES (2,'E 220 d Sport Saloon',4990000.00,'The design will captivate you. The infotainment system knows you like a good friend. And the comfort lets you enjoy every second of the journey. Perfect for mastering daily challenges not only in style, but also dynamically and comfortably.','2020-02-21');
+INSERT INTO Cars (id,name,price,description,releasedate,brands_id) VALUES (1,'BMW 2 Series Coupe',2990000.00,'The BMW 2 Series Coupé thrills from every angle. Whether it’s the powerful rear-drive performance or the chic sporty presence, it’s ready to set pulses racing. Add to this the impressive interior comforts, and you have the complete driving experience.','2021-02-10',2);
+INSERT INTO Cars (id,name,price,description,releasedate,brands_id) VALUES (2,'E 220 d Sport Saloon',4990000.00,'The design will captivate you. The infotainment system knows you like a good friend. And the comfort lets you enjoy every second of the journey. Perfect for mastering daily challenges not only in style, but also dynamically and comfortably.','2020-02-21',3);
 
 insert into CarColors(cars_id,colors_id) values (1,1);
 insert into CarColors(cars_id,colors_id) values (1,2);
@@ -31,11 +31,3 @@ insert into CarColors(cars_id,colors_id) values (2,4);
 insert into CarColors(cars_id,colors_id) values (2,6);
 insert into CarColors(cars_id,colors_id) values (2,7);
 insert into CarColors(cars_id,colors_id) values (2,8);
-
-CREATE TABLE carbrands (
-    cars_id    INTEGER NOT NULL,
-    brands_id  INTEGER NOT NULL
-);
-
-insert into CarBrands(cars_id,brands_id) values (1,2);
-insert into CarBrands(cars_id,brands_id) values (1,3);

@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -41,4 +42,7 @@ public class Car {
 	@ManyToMany(fetch=FetchType.LAZY)
 	@JoinTable(name = "carcolors", joinColumns = @JoinColumn(name = "cars_id",referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "colors_id",referencedColumnName = "id"))
 	private Set<Color> colors;
+	@ManyToOne
+	@JoinColumn(name="brands_id")
+	private Brand brand;
 }
