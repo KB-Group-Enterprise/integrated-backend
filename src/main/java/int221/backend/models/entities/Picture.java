@@ -26,4 +26,6 @@ public class Picture {
 	private long cars_id;
 	@NonNull
 	private String name;
+	@NonNull
+	private String filetype;
 }
