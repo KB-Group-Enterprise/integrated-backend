@@ -3,14 +3,17 @@ package int221.backend.controllers;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,22 +35,23 @@ public class PictureRestController {
     }
 
 	@PostMapping("/test/img")
-	private String test(@RequestParam("images") List<MultipartFile> imageFiles) {
+	@ResponseBody
+	private ResponseEntity<Object> test(@RequestParam("images") List<MultipartFile> imageFiles) {
 		for ( MultipartFile imageFile : imageFiles) {
 			try {
 				imageService.SaveAndInsert(imageFile, 2);
 			} catch (IOException e) {
 				e.printStackTrace();
+				return new ResponseEntity<Object>(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 		}
-		return "Ok!";
+		return new ResponseEntity<Object>(HttpStatus.OK);
 	}
-	@GetMapping("/test/img/{id}")
-	private ResponseEntity<byte[]> testGet(@PathVariable("id") long id) {
+	@GetMapping("/img/{id}")
+	private ResponseEntity<byte[]> getImage(@PathVariable("id") long id) {
 		Picture pic = pictureRepository.findById(id).orElse(null);
 		String img_name = pic.getName();
 		MediaType mediaType = imageService.getMediaType(pic.getFiletype());
-		
 		try {
 			byte[] image = imageService.getImageFile(img_name);
 			return ResponseEntity.ok().contentType(mediaType).body(image);
@@ -55,9 +59,14 @@ public class PictureRestController {
 			e.printStackTrace();
 		}
 		return null;
-	} 
-	@GetMapping("/test/converter")
-	public String testConverter() {
-		return imageService.getFileTypeFromContentType("image/jpeg");
+	}
+	@DeleteMapping("/test/img/delete")
+	private boolean deleteTest() {
+		return imageService.deleteFileThenPicture(10);
+	}
+	
+	@DeleteMapping("/test/img/delete/{carId}")
+	private boolean deleteImagefromCarId(@PathVariable("carId") Long carId) {
+		return imageService.deleteAllPictureByCarId(carId);
 	}
 }

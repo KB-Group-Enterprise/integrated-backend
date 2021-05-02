@@ -1,9 +1,11 @@
 package int221.backend.models.services;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,7 @@ public class ImageService {
 		return "Picture saved Successfully";
 	}
 	
+		
 	public boolean SaveAndInsert(MultipartFile imageFile, long carId) throws IOException {
 		String image_name = generateImageName(carId,imageFile.getContentType());
 		String filetype = imageFile.getContentType();
@@ -45,14 +48,25 @@ public class ImageService {
 		return true;
 	}
 	
+	public boolean SaveAndInsertAll(List<MultipartFile> imagesFiles,long carId) throws IOException {
+		for (MultipartFile imagesFile : imagesFiles) {
+			SaveAndInsert(imagesFile,carId);
+		}
+		return true;
+	}
+	
+	public boolean deleateAllbyCarIdThenInsertAll(List<MultipartFile> imagesFiles,long carId) throws IOException {
+		if (deleteAllPictureByCarId(carId)) {
+			return SaveAndInsertAll(imagesFiles,carId);
+		} else {
+			return false;
+		}
+	}
 	 
 	
 	public byte[] getImageFile(String fileName) throws IOException {
-		String url = FOLDER_URL+fileName;
-		System.out.println(url);
 		Path path = Paths.get(FOLDER_URL+fileName);
 		byte[] data = Files.readAllBytes(path);
-		System.out.println(data);
 		return data;
  	}
 	
@@ -108,5 +122,39 @@ public class ImageService {
 	        buffer.append((char) randomLimitedInt);
 	    }
 	    return buffer.toString();
+	}
+	
+	public boolean deleteImageFile(String fileName) {
+		File file = new File(FOLDER_URL+fileName);
+		if (file.exists()) {
+			file.delete();
+		}
+		return true;
+	}
+	
+	public boolean deleteFileThenPicture(long picId) {
+		Picture pic = pictureRepository.findById(picId).orElse(null);
+		String fileName = pic.getName();
+		if (deleteImageFile(fileName)){
+			pictureRepository.deleteById(picId);
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean deleteAllPictureByCarId(long carId) {
+		List<Picture> pics = pictureRepository.findAllByCarid(carId);
+		if (pics.isEmpty()) {
+			return true;
+		}
+		for (Picture pic : pics) {
+			if (deleteFileThenPicture(pic.getId())) {
+				continue;
+			}else {
+				return false;
+			}
+		}
+		return true;
 	}
 }

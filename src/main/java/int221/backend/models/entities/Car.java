@@ -41,12 +41,15 @@ public class Car {
 	private long horsepower;
 	@Column(nullable = false)
 	private Date releasedate;
-	@OneToMany(cascade=CascadeType.REMOVE,fetch=FetchType.LAZY,mappedBy="cars_id")
+	@OneToMany(cascade=CascadeType.REMOVE,fetch=FetchType.LAZY,mappedBy="carid")
 	private List<Picture> pictures;
 	@ManyToMany(fetch=FetchType.LAZY)
 	@JoinTable(name = "carcolors", joinColumns = @JoinColumn(name = "cars_id",referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "colors_id",referencedColumnName = "id"))
 	private Set<Color> colors;
 	@ManyToOne
-	@JoinColumn(name="brands_id")
+	@JoinColumn(name="brandid")
 	private Brand brand;
+	@ManyToOne
+	@JoinColumn(name="cartypeid")
+	private CarType cartype;
 }
