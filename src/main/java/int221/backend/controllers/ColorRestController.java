@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import int221.backend.models.entities.Color;
 import int221.backend.repositories.ColorRepository;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${cross.origin.url}")
 @RestController
 @RequestMapping("/api")
 public class ColorRestController {

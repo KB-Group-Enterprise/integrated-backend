@@ -18,10 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import int221.backend.models.entities.Picture;
+import int221.backend.models.exception.ImageNotFoundException;
 import int221.backend.models.services.ImageService;
 import int221.backend.repositories.PictureRepository;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${cross.origin.url}")
 @RestController
 @RequestMapping("/api")
 public class PictureRestController {
@@ -49,16 +50,16 @@ public class PictureRestController {
 	}
 	@GetMapping("/img/{id}")
 	private ResponseEntity<byte[]> getImage(@PathVariable("id") long id) {
-		Picture pic = pictureRepository.findById(id).orElse(null);
-		String img_name = pic.getName();
-		MediaType mediaType = imageService.getMediaType(pic.getFiletype());
 		try {
+			Picture pic = pictureRepository.findById(id).orElse(null);
+			String img_name = pic.getName();
+			MediaType mediaType = imageService.getMediaType(pic.getFiletype());
 			byte[] image = imageService.getImageFile(img_name);
 			return ResponseEntity.ok().contentType(mediaType).body(image);
 		} catch (IOException e) {
 			e.printStackTrace();
+			throw new ImageNotFoundException();
 		}
-		return null;
 	}
 	@DeleteMapping("/test/img/delete")
 	private boolean deleteTest() {

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import int221.backend.repositories.CarTypeRepository;
 import int221.backend.models.entities.CarType;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${cross.origin.url}")
 @RestController
 @RequestMapping("/api")
 public class CarTypeController {

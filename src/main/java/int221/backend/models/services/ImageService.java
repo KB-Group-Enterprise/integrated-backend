@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import int221.backend.models.entities.Picture;
+import int221.backend.models.exception.UnsupportedMediaTypeException;
 import int221.backend.repositories.PictureRepository;
 
 @Component("imageService")
@@ -25,7 +26,7 @@ public class ImageService {
 	private PictureRepository pictureRepository;
 	private final String FOLDER_URL;
 	
-	ImageService(@Value("${photos_url}") String url) {
+	ImageService(@Value("${photos.url}") String url) {
 		this.FOLDER_URL = System.getProperty("user.dir") + url;
 	}
 	
@@ -40,6 +41,9 @@ public class ImageService {
 	public boolean SaveAndInsert(MultipartFile imageFile, long carId) throws IOException {
 		String image_name = generateImageName(carId,imageFile.getContentType());
 		String filetype = imageFile.getContentType();
+		if (!filetype.equalsIgnoreCase("image/png") && !filetype.equalsIgnoreCase("image/jpeg")) {
+			throw new UnsupportedMediaTypeException();
+		}
 		//save image files
 		save(imageFile,image_name);
 		//Insert references to Database

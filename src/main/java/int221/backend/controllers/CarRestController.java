@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,15 +18,20 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import int221.backend.models.entities.Car;
+import int221.backend.models.exception.CarNotFoundException;
+import int221.backend.models.exception.PageNotFoundException;
+import int221.backend.models.exception.UnsupportedMediaTypeException;
+import int221.backend.models.response.PageWithTotal;
 import int221.backend.models.services.CarService;
 import int221.backend.models.services.ImageService;
 import int221.backend.models.services.PageService;
 import int221.backend.repositories.CarRepository;
 
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "${cross.origin.url}")
 @RestController
 @RequestMapping("/api")
 public class CarRestController {
@@ -42,29 +48,43 @@ public class CarRestController {
 	private List<Car> showAllCars() {
 		return carRepository.findAll();
     }
+	
 	@GetMapping("/cars/{id}")
 	public Car showCar(@PathVariable long id) {
-		return this.carRepository.findById(id).orElse(null);
+		Car response = this.carRepository.findById(id).orElse(null);
+		if (response == null) {
+			throw new CarNotFoundException();
+		}
+		return response;
 	}
 	
 	@GetMapping("/cars/pages/{pageNo}/{pageSize}/{sortBy}/{direction}")	
-	public  List<Car> showAllCarsWithPage(@PathVariable int pageNo,@PathVariable int pageSize,@PathVariable String sortBy,@PathVariable String direction) {
+	public  PageWithTotal<Car> showAllCarsWithPage(@PathVariable int pageNo,@PathVariable int pageSize,@PathVariable String sortBy,@PathVariable String direction) {
 		Sort sorter = pageService.getSortByAndDirection(sortBy, direction);
 		Pageable pageable = PageRequest.of(pageNo, pageSize,sorter);
 		Page<Car> pageResult = carRepository.findAll(pageable);
-		return pageResult.getContent();
+		PageWithTotal<Car> response = new PageWithTotal<Car>(pageResult.getContent(),pageResult.getTotalPages());
+		if (pageNo > pageResult.getTotalPages()) {
+			throw new PageNotFoundException();
+		}
+		return response;
 	}
 	
 	@GetMapping("/cars/brand/{id}")
 	private List<Car> showAllCarsByBrand(@PathVariable("id") long brandId) {
 		return carRepository.findAllByBrandId(brandId);
     }
+	
 	@GetMapping("/cars/brand/{brandId}/pages/{pageNo}/{pageSize}/{sortBy}/{direction}")	
-	public  List<Car> showAllCarsByBrandWithPage(@PathVariable int brandId,@PathVariable int pageNo,@PathVariable int pageSize,@PathVariable String sortBy,@PathVariable String direction) {
+	public  PageWithTotal<Car>  showAllCarsByBrandWithPage(@PathVariable int brandId,@PathVariable int pageNo,@PathVariable int pageSize,@PathVariable String sortBy,@PathVariable String direction) {
 		Sort sorter = pageService.getSortByAndDirection(sortBy, direction);
 		Pageable pageable = PageRequest.of(pageNo, pageSize,sorter);
 		Page<Car> pageResult = carRepository.findAllByBrandIdWithPage(brandId, pageable);
-		return pageResult.getContent();
+		PageWithTotal<Car> response = new PageWithTotal<Car>(pageResult.getContent(),pageResult.getTotalPages());
+		if (pageNo > pageResult.getTotalPages() || pageResult.getNumberOfElements() < 1) {
+			throw new PageNotFoundException();
+		}
+		return response;
 	}
 	
 	@GetMapping("/cars/cartype/{id}")
@@ -73,11 +93,15 @@ public class CarRestController {
     }
 	
 	@GetMapping("/cars/cartype/{cartypeId}/pages/{pageNo}/{pageSize}/{sortBy}/{direction}")	
-	public  List<Car> showAllCarsByCartypeWithPage(@PathVariable int cartypeId,@PathVariable int pageNo,@PathVariable int pageSize,@PathVariable String sortBy,@PathVariable String direction) {
+	public  PageWithTotal<Car> showAllCarsByCartypeWithPage(@PathVariable int cartypeId,@PathVariable int pageNo,@PathVariable int pageSize,@PathVariable String sortBy,@PathVariable String direction) {
 		Sort sorter = pageService.getSortByAndDirection(sortBy, direction);
 		Pageable pageable = PageRequest.of(pageNo, pageSize,sorter);
 		Page<Car> pageResult = carRepository.findAllByCartypeIdWithPage(cartypeId, pageable);
-		return pageResult.getContent();
+		PageWithTotal<Car> response = new PageWithTotal<Car>(pageResult.getContent(),pageResult.getTotalPages());
+		if (pageNo > pageResult.getTotalPages() || pageResult.getNumberOfElements() < 1) {
+			throw new PageNotFoundException();
+		}
+		return response;
 	}
 	
 	@GetMapping("/cars/brand/{brandid}/cartype/{cartypeid}")
@@ -86,11 +110,15 @@ public class CarRestController {
     }
 	
 	@GetMapping("/cars/brand/{brandId}/cartype/{cartypeId}/pages/{pageNo}/{pageSize}/{sortBy}/{direction}")	
-	public  List<Car> showAllCarsByBrandAndCartypeWithPage(@PathVariable int brandId,@PathVariable int cartypeId,@PathVariable int pageNo,@PathVariable int pageSize,@PathVariable String sortBy,@PathVariable String direction) {
+	public  PageWithTotal<Car> showAllCarsByBrandAndCartypeWithPage(@PathVariable int brandId,@PathVariable int cartypeId,@PathVariable int pageNo,@PathVariable int pageSize,@PathVariable String sortBy,@PathVariable String direction) {
 		Sort sorter = pageService.getSortByAndDirection(sortBy, direction);
 		Pageable pageable = PageRequest.of(pageNo, pageSize,sorter);
 		Page<Car> pageResult = carRepository.findAllByBrandIdAndCartypeIdWithPage(brandId, cartypeId, pageable);
-		return pageResult.getContent();
+		PageWithTotal<Car> response = new PageWithTotal<Car>(pageResult.getContent(),pageResult.getTotalPages());
+		if (pageNo > pageResult.getTotalPages() || pageResult.getNumberOfElements() < 1) {
+			throw new PageNotFoundException();
+		}
+		return response;
 	}
 	
 	@PostMapping("/cars")
@@ -103,10 +131,13 @@ public class CarRestController {
 					imageservice.SaveAndInsertAll(imageFiles, newCar.getId());
 			   }
 				return newCar;
+			} catch (UnsupportedMediaTypeException e) {
+				e.printStackTrace();
+				throw new UnsupportedMediaTypeException();
 			} catch (Exception e) {
 				e.printStackTrace();
+				throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-		return null;
 	}
 	
 	@PutMapping("/cars/{id}") 
@@ -133,9 +164,8 @@ public class CarRestController {
 			}
 			return updated_car;
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		return null;
 	}
 	@DeleteMapping("/cars/{id}")
 	private String deleteCar(@PathVariable("id") long id) {
@@ -143,6 +173,7 @@ public class CarRestController {
 			carRepository.deleteById(id);
 			return "car deleted";
 		}
-		return "error";
+		throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
+
 }
