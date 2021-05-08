@@ -41,8 +41,10 @@ public class ImageService {
 	public boolean SaveAndInsert(MultipartFile imageFile, long carId) throws IOException {
 		String image_name = generateImageName(carId,imageFile.getContentType());
 		String filetype = imageFile.getContentType();
-		if (!filetype.equalsIgnoreCase("image/png") && !filetype.equalsIgnoreCase("image/jpeg")) {
+		if (!filetype.equalsIgnoreCase("image/png")) {
+			if (!filetype.equalsIgnoreCase("image/jpeg")) {
 			throw new UnsupportedMediaTypeException();
+			}
 		}
 		//save image files
 		save(imageFile,image_name);

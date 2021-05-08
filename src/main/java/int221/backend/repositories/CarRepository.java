@@ -14,10 +14,14 @@ import int221.backend.models.entities.Car;
 @Repository
 public interface CarRepository extends JpaRepository<Car, Long> {
 	
+	
+	
 	@Query("SELECT c FROM Car c WHERE c.brand.id = ?1")
 	public List<Car> findAllByBrandId(long brandId);
 	@Query("SELECT c FROM Car c WHERE c.brand.id = ?1")
 	public Page<Car> findAllByBrandIdWithPage(long brandId,Pageable pageable);
+	
+	public Boolean existsByName(String name);
 	
 	@Query("SELECT c FROM Car c WHERE c.cartype.id = ?1")
 	public List<Car> findAllByCartypeId(long cartypeid);

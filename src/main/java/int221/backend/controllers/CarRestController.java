@@ -49,6 +49,11 @@ public class CarRestController {
 		return carRepository.findAll();
     }
 	
+	@GetMapping("/cars/namecheck/{name}")
+	private Boolean namecheck(@PathVariable String name) {
+		return carRepository.existsByName(name);
+    }
+	
 	@GetMapping("/cars/{id}")
 	public Car showCar(@PathVariable long id) {
 		Car response = this.carRepository.findById(id).orElse(null);
