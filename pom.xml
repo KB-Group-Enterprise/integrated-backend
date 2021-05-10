@@ -12,8 +12,25 @@
   <name>integrated-backend</name>
   <description>Rest API for INT221 integrated project</description>
   <properties>
-		<java.version>11</java.version>
-	</properties>
+	<java.version>11</java.version>
+  </properties>
+   <profiles>
+    <profile>
+        <id>dev</id>
+        <activation>
+            <activeByDefault>true</activeByDefault>
+        </activation>
+        <properties>
+            <spring.profiles.active>dev</spring.profiles.active>
+        </properties>
+    </profile>
+    <profile>
+        <id>prod</id>
+        <properties>
+            <spring.profiles.active>prod</spring.profiles.active>
+        </properties>
+    </profile>
+    </profiles>
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -53,6 +70,11 @@
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+        	<groupId>org.projectlombok</groupId>
+        	<artifactId>lombok</artifactId>
+        	<scope>provided</scope>
+    	</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -60,6 +82,31 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.18</version>
+                        </path>
+                    </annotationProcessorPaths>
+                    <compilerArgs>
+                    	<arg>-sourcepath</arg>
+                    	<arg>${project.basedir}/src/main/java${path.separator}${project.basedir}/target/generated-sources/annotations${path.separator}/</arg>
+                	</compilerArgs>                 
+                </configuration>
+            </plugin>
 		</plugins>
+		<resources>
+            <resource>
+              <directory>src/main/resources</directory>
+               <filtering>true</filtering>
+           </resource>
+         </resources>
 	</build>
 </project>
