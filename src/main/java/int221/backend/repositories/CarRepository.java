@@ -25,7 +25,7 @@ public interface CarRepository extends JpaRepository<Car, Long> {
 	
 	@Query("SELECT c FROM Car c WHERE c.cartype.id = ?1")
 	public List<Car> findAllByCartypeId(long cartypeid);
-	@Query("SELECT c FROM Car c WHERE c.brand.id = ?1")
+	@Query("SELECT c FROM Car c WHERE c.cartype.id = ?1")
 	public Page<Car> findAllByCartypeIdWithPage(long brandId,Pageable pageable);
 	
 	@Query("SELECT c FROM Car c WHERE c.brand.id = ?1 AND c.cartype.id = ?2")
