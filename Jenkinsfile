@@ -4,6 +4,7 @@ pipeline {
         DB_HOST = credentials('db_url')
         DB_USER = credentials('db_user')
         DB_PASSWORD = credentials('db_password')
+        CROSS_ORIGIN = credentials('cross_origin')
     }
     stages {
         stage('docker compose down') {
