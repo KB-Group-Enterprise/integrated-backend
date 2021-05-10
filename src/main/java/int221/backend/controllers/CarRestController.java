@@ -23,6 +23,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import int221.backend.models.entities.Car;
 import int221.backend.models.exception.CarNotFoundException;
+import int221.backend.models.exception.NameAlreadyExistException;
 import int221.backend.models.exception.PageNotFoundException;
 import int221.backend.models.exception.UnsupportedMediaTypeException;
 import int221.backend.models.response.PageWithTotal;
@@ -50,7 +51,7 @@ public class CarRestController {
     }
 	
 	@GetMapping("/cars/namecheck/{name}")
-	private Boolean namecheck(@PathVariable String name) {
+	private Boolean nameCheck(@PathVariable String name) {
 		return carRepository.existsByName(name);
     }
 	
@@ -131,6 +132,9 @@ public class CarRestController {
 			Car car;
 			try {
 				car = carservice.convertJsonStringToCar(jsonString);
+				if (nameCheck(car.getName())) {
+					throw new NameAlreadyExistException();
+				}
 				Car newCar = carRepository.save(car);
 				if(!(imageFiles == null) && !imageFiles.isEmpty()) {
 					imageservice.SaveAndInsertAll(imageFiles, newCar.getId());
@@ -139,7 +143,10 @@ public class CarRestController {
 			} catch (UnsupportedMediaTypeException e) {
 				e.printStackTrace();
 				throw new UnsupportedMediaTypeException();
-			} catch (Exception e) {
+			} catch (NameAlreadyExistException e) {
+				throw new NameAlreadyExistException();
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 				throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
@@ -151,9 +158,15 @@ public class CarRestController {
 		Car car;
 		try {
 			car = carservice.convertJsonStringToCar(jsonString);
-			if (carRepository.findById(id).orElse(null) == null) {
-				return null;
-			} 
+			Car oldCar = carRepository.findById(id).orElse(null);
+			if (oldCar == null) {
+				throw new CarNotFoundException();
+			}
+			if (!oldCar.getName().equalsIgnoreCase(car.getName())) {
+				if (nameCheck(car.getName())) {
+					throw new NameAlreadyExistException();
+				}
+			}
 			Car update_car = this.carRepository.getOne(id);
 			update_car.setName(car.getName());
 			update_car.setBrand(car.getBrand());
@@ -168,12 +181,21 @@ public class CarRestController {
 					imageservice.deleateAllbyCarIdThenInsertAll(imageFiles,updated_car.getId());
 			}
 			return updated_car;
-		} catch (Exception e) {
+		} catch (CarNotFoundException e) {
+			throw new CarNotFoundException();
+		}
+		catch (NameAlreadyExistException e) {
+			throw new NameAlreadyExistException();
+		}
+		catch (Exception e) {
 			throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	@DeleteMapping("/cars/{id}")
 	private String deleteCar(@PathVariable("id") long id) {
+		if (carRepository.findById(id).isEmpty()) {
+			throw new CarNotFoundException();
+		}
 		if (imageservice.deleteAllPictureByCarId(id)) {
 			carRepository.deleteById(id);
 			return "car deleted";
